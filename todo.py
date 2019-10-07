@@ -43,13 +43,13 @@ class TodoList:
 
     def RemoveItem(self, item):
 
-        if self.num_comments != 0:
+        if self.num_comments != 0 or self.num_tasks != 0:
             count = 0
             found_task = False
             found_comment = False
-            while count < self.num_comments and not found_task:
+            while count < self.num_tasks and not found_task:
                 if self.tasks[count] == item:
-                    del self.comments[count]
+                    del self.tasks[count]
                     self.num_tasks -= 1
                     found_task = True
                 count += 1
@@ -67,6 +67,8 @@ class TodoList:
                 return("Item removed.\n")
             else:
                 return("Item not found.\n")
+        else:
+            return("Todo list is empty.\n")
 
 
     def AddTask(self, task):
@@ -79,6 +81,7 @@ class TodoList:
 
     def Print(self):
 
+        if debug: print("Entering Todo.Print")
         output_string = ""
         tasks_string = ""
         comments_string = ""
