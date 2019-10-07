@@ -27,65 +27,70 @@ class GroceryList:
     def PrintList(self, locationlist):
 
         with open(self.file,"r") as infile:
-            test_list = infile.read()
+            test = infile.read()
     
-    if test_list == "":
+        if test == "":
 
-            return("Grocery list is currently empty\n")
+           return("Grocery list is currently empty\n")
 
-    else:
+        else:
 
-            
-            output_string = "Current Grocery List:\n\n"
+
             with open(self.file,"r") as infile:
-
                 line = infile.readline()
                 temp_list = []
-                item_count = 0
+                count = 0           
+                while line != '':   # blank is end of file
+                    temp_list.append(line.rstrip("\n"))
+                    count += 1
+                    line = infile.readline()
 
-                item_count = countLinesInFile(self.file)
-               
-                for location in locationlist.locations:
+            item_count = count
 
-                    found = 0
-                    temp_string = ""
+            output_string = "Current Grocery List:\n\n"
 
-                    for i in range(item_count):
-                        item_loc = locationlist.FindItem(temp_list[i].capitalize())
-                        if item_loc == location:
-                            found = 1
-                            temp_string += "   " + temp_list[i] + "\n"
-                    if found:
-                        output_string += location + "\n" + temp_string + "\n"
-                        found = 0
-                            
-                # Check for items that have no location data and print them too
+           
+            for location in locationlist.locations:
+
                 found = 0
                 temp_string = ""
-                comments = ""
 
                 for i in range(item_count):
-                    part = temp_list[i].partition(" ")
-                    if part[0] == "Comment":
-                        comments += "* " + part[2] +"\n"
-                    else:
-                        item_loc = locationlist.FindItem(temp_list[i].capitalize())
-                        if item_loc == "":
-                            found = 1
-                            temp_string += "   " + temp_list[i] + "\n"
+                    item_loc = locationlist.FindItem(temp_list[i].capitalize())
+                    if item_loc == location:
+                        found = 1
+                        temp_string += "   " + temp_list[i] + "\n"
                 if found:
-                    output_string += "No Category" + "\n" + temp_string + "\n"
+                    output_string += location + "\n" + temp_string + "\n"
                     found = 0
-                
-                if comments: output_string += "COMMENTS:\n" + comments
+                        
+            # Check for items that have no location data and print them too
+            found = 0
+            temp_string = ""
+            comments = ""
+
+            for i in range(item_count):
+                part = temp_list[i].partition(" ")
+                if part[0] == "Comment":
+                    comments += "* " + part[2] +"\n"
+                else:
+                    item_loc = locationlist.FindItem(temp_list[i].capitalize())
+                    if item_loc == "":
+                        found = 1
+                        temp_string += "   " + temp_list[i] + "\n"
+            if found:
+                output_string += "No Category" + "\n" + temp_string + "\n"
+                found = 0
             
-                return(output_string)
+            if comments: output_string += "COMMENTS:\n" + comments
+        
+            return(output_string)
                 
         
     def ClearList(self):
 
         recreate_file = open(self.file, "w")
-    recreate_file.close()
+        recreate_file.close()
 
 
 class GroceryItemLocationList:
