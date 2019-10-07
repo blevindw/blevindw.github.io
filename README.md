@@ -8,8 +8,8 @@ Currently, it provides the following functions:
 2- Maintains a todo list
 3- Maintains locations of grocery items in a store. (Such as cinnamon is on the baking aisle.)
 4- Miscellaneous commands:
-a- Displays command help
-b- RPi CPU temperature
-c- current users
+  a- Displays command help
+  b- RPi CPU temperature
+  c- current users
 
 Future releases will upgrade the todo list and grocery list functionality. I have a basic way to push notices to users via Telegram, so I'm sure I'll be doing something fun with that.
