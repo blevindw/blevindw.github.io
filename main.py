@@ -135,7 +135,7 @@ Other commands:\n\n\
 
 
 # Get your Bot key from BotFather and put it here.
-bot=telepot.Bot('943076918:AAFhBYAhPIcElFd-Xlabp5yymt8EBT0rKvk')
+bot=telepot.Bot('YOURBOTKEYHERE')
 bot.message_loop(handle)
 print('I am listening...')
 
