@@ -25,7 +25,7 @@ def CPUTooHot():
     
     cpu = CPUTemperature()
 
-    if cpu.temperature > 80:
+    if cpu.temperature > 75:
         return True
     else:
         return False
@@ -64,8 +64,8 @@ def handle(msg):
            cel = round(cpu.temperature)
            fahr = round((cpu.temperature * 9 / 5) + 32, 1)
            output_string = "Current temp is a balmy "
-           output_string += str(cel) + "C "
-           output_string += "or " + str(fahr) + "F"
+           output_string += str(cel) + u'\u00b0' + "C "
+           output_string += "or " + str(fahr) + u'\u00b0' + "F"
            bot.sendMessage(chat_id, output_string)
         elif command == 'who':
            output_string = user_list.Print()
@@ -135,7 +135,7 @@ Other commands:\n\n\
 
 
 # Get your Bot key from BotFather and put it here.
-bot=telepot.Bot('YOURBOTKEYHERE')
+bot=telepot.Bot('943076918:AAFhBYAhPIcElFd-Xlabp5yymt8EBT0rKvk')
 bot.message_loop(handle)
 print('I am listening...')
 
@@ -151,8 +151,8 @@ while 1:
             cel = round(cpu.temperature)
             fahr = round((cpu.temperature * 9 / 5) + 32, 1)
             output_string = "Current temp is too HOT:\n"
-            output_string += str(cel) + "C "
-            output_string += "or " + str(fahr) + "F" + "\n"
+            output_string += str(cel) + u'\u00b0' +"C "
+            output_string += "or " + str(fahr) + u'\u00b0' + "F" + "\n"
             output_string += "Please check on me.\n"
 
             user_list.TellAllUsers(bot, output_string)

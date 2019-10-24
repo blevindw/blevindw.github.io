@@ -47,17 +47,21 @@ class TodoList:
             count = 0
             found_task = False
             found_comment = False
+            print(self.tasks)
             while count < self.num_tasks and not found_task:
+                print("Checking " + self.tasks[count])
                 if self.tasks[count] == item:
-                    del self.tasks[count]
+                    print("Found " + item)
+                    self.tasks.remove(item)
+                    print(self.tasks)
                     self.num_tasks -= 1
                     found_task = True
                 count += 1
 
             count = 0
-            while count < self.num_comments and not found_comment:
+            while count < self.num_comments and not found_comment and not found_task:
                 if self.comments[count] == item:
-                    del self.comments[count]
+                    self.comments.remove(item)
                     self.num_comments -= 1
                     found_comment = True
                 count += 1
@@ -121,25 +125,28 @@ class TodoList:
     def FileList(self):
 
         recreate_file = open(self.file, "w")
+        recreate_file.truncate(0)
         recreate_file.close()
 
         temp_string = ""
         if self.num_tasks > 0:
-            count = 0
-            while count < self.num_tasks:
-                with open(self.file,"a") as infile:
-                    temp_string += str(count + 1) + " " + str(self.tasks[count] + "\n")
-                    infile.write(temp_string)
-                    count += 1
+            with open(self.file,"a") as infile:
+                count = 0
+                while count < self.num_tasks:
+                        temp_string = str(count + 1) + " " + self.tasks[count] + "\n"
+                        infile.write(temp_string)
+                        count += 1
+            infile.close()
 
         temp_string = ""
         if self.num_comments > 0:
-            count = 0
-            while count < self.num_comments:
-                with open(self.file,"a") as infile:
-                    temp_string += str(count + 1) + " " + str(self.comments[count] + "\n")
-                    infile.write(temp_string)
-                    count += 1
+            with open(self.file,"a") as infile:
+                count = 0
+                while count < self.num_comments:
+                        temp_string = str(count + 1) + " " + str(self.comments[count] + "\n")
+                        infile.write(temp_string)
+                        count += 1
+            infile.close()
 
     def LoadFile(self):
         self.num_lines = countLinesInFile(self.file)

@@ -56,8 +56,7 @@ class GroceryList:
                 temp_string = ""
 
                 for i in range(item_count):
-                    item_loc = locationlist.FindItem(temp_list[i].capitalize())
-                    if item_loc == location:
+                    if locationlist.IsItemInLocation(location, temp_list[i].capitalize()):
                         found = 1
                         temp_string += "   " + temp_list[i] + "\n"
                 if found:
@@ -126,7 +125,16 @@ class GroceryItemLocationList:
             self.CreateList()
             return(ITEM_ADDED)
 
+    def IsItemInLocation(self, location, item):
+        
+        found = 0
+        string = ""
+        for row in range(self.line_count):
+            if self.currentlist[row][0] == location and self.currentlist[row][1] == item:
+                found = 1
 
+        return found
+        
 
     def FindItem(self, item):
         
