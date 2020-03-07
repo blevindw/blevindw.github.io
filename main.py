@@ -14,12 +14,13 @@ from todo import *
 
 GROCERY_LIST_FILE="grocerylist.txt"
 ITEM_LOCATION_FILE="itemlocationlist.txt"
-TODO_LIST_FILE="todo.txt"
 
 grocerylist = GroceryList(GROCERY_LIST_FILE)
 grocerylocationlist = GroceryItemLocationList(ITEM_LOCATION_FILE)
 user_list = UserList()
-todo_list = TodoList(TODO_LIST_FILE)
+
+grocery_list_updated=False
+grocery_list_version=1
 
 def CPUTooHot():
     
@@ -41,7 +42,8 @@ def handle(msg):
 
     if person == HOMIE:
 
-        user_list.Add(msg)        # add if a new user joined 
+        current_user = user_list.Add(msg)        # add if a new user joined 
+        todo_list = current_user.todo_list
 
         if debug: print(msg)
         part = message.partition(" ")
@@ -70,6 +72,8 @@ def handle(msg):
         elif command == 'who':
            output_string = user_list.Print()
            bot.sendMessage(chat_id, output_string)
+        elif command == 'push':
+           user_list.TellAllUsers(bot, item)
         elif command == 'todo':
            output_string = todo_list.TodoHandler(bot, msg)
            bot.sendMessage(chat_id, output_string)
@@ -79,18 +83,14 @@ def handle(msg):
 
         elif command == 'say' or command == "comment":
            grocerylist.AddComment(item)
-           bot.sendMessage(chat_id,"Added your comment:\n" + item + "\n")
+           user_list.TellAllUsers(bot, "Comment added.")
         elif command =='store':
            subcommand = part[2].partition(" ")
            if subcommand[0].lower() == "add":
                temp_tuple = subcommand[2].partition(" ")
                location = temp_tuple[0]
                item = temp_tuple[2]
-               status = grocerylocationlist.AddItem(location, item)
-               if status == ITEM_ADDED:
-                   bot.sendMessage(chat_id,"Added "+ item + " to the list.\n")
-               elif status == ITEM_DUPLICATE:
-                   bot.sendMessage(chat_id,"Already on the list, thanks tho!\n")
+               bot.sendMessage(chat_id, grocerylocationlist.AddItem(location, item))
            else:
                bot.sendMessage(chat_id,"Store has the following: \n")
                bot.sendMessage(chat_id,grocerylocationlist.PrintStoreList())
@@ -101,10 +101,10 @@ def handle(msg):
            bot.sendMessage(chat_id,grocerylocationlist.PrintLocationList())
         elif command == 'add':
            grocerylist.AddItem(item)
-           bot.sendMessage(chat_id,"Adding " + item)
+           user_list.TellAllUsers(bot, "Adding " + item)
         elif command == 'reset':
            grocerylist.ClearList()
-           bot.sendMessage(chat_id,"List cleared.")
+           user_list.TellAllUsers(bot, "List cleared.")
 
 # ******
 
@@ -115,9 +115,9 @@ def handle(msg):
 
        
 def SendHelpMessage(chat_id):
-   bot.sendMessage(chat_id, "Valid commands are:\n\
-       Hi or Hello \n\
-       ? or Help \n\
+   output_string = "Valid commands are:\n\
+       ? or Help \n\n\
+Grocery List Commands:\n\n\
        Say or Comment phrase - adds a comment to the list \n\
        Add item - for adding an item to the list\n\
        List - gives the current list\n\
@@ -125,10 +125,16 @@ def SendHelpMessage(chat_id):
        Store add location item - adds the location info for an item\n\
        Areas or Locations - tells currently used store areas\n\
        Reset - deletes the whole list\n\n\
-Case is ignored.\n\n\
-Other commands:\n\n\
-       Who - lists all current users\n\
-       Temp or Hot - give current CPU temp\n")
+Other commands:\n\n"
+   output_string += '       Todo- manages a family todo list\n'\
+       + "              Use Todo ? for a list of options\n"\
+       + "       Hi or Hello \n"\
+       + "       Who - lists all current users\n"\
+       + "       Temp or Hot - give current CPU temp\n\n"
+
+   output_string += "Case is ignored.\n"
+
+   bot.sendMessage(chat_id, output_string)
 
 
 #******************* MAIN LOOP ********************************
@@ -137,26 +143,12 @@ Other commands:\n\n\
 # Get your Bot key from BotFather and put it here.
 bot=telepot.Bot('YOUR_BOT_KEY_HERE')
 bot.message_loop(handle)
-print('I am listening...')
-
-count = 0
+print('I am ' + '\033[1m' + 'listening...' + '\033[0m')
 
 while 1:
     try:
-
+       
         time.sleep(10)
-
-        if CPUTooHot():
-            cpu = CPUTemperature()
-            cel = round(cpu.temperature)
-            fahr = round((cpu.temperature * 9 / 5) + 32, 1)
-            output_string = "Current temp is too HOT:\n"
-            output_string += str(cel) + u'\u00b0' +"C "
-            output_string += "or " + str(fahr) + u'\u00b0' + "F" + "\n"
-            output_string += "Please check on me.\n"
-
-            user_list.TellAllUsers(bot, output_string)
-
     
     except KeyboardInterrupt:
         print('\n Program interrupted')

@@ -4,6 +4,10 @@ import sys
 import time
 import telepot
 
+from todo import *
+
+#debug = 1
+
 HOMIE=1
 STRANGER=0
 
@@ -26,6 +30,11 @@ class User:
         self.first_name = msg['from']['first_name']
         self.last_name = msg['from']['last_name']
         self.person_id = msg['from']['id']
+        self.todo_filename = self.first_name + "." + "todo.txt"
+        self.todo_list = TodoList(self.todo_filename)
+        if debug:
+            print("\nUser is " + self.first_name)
+            print("Filename is " + self.todo_filename + "\n")
 
 
 # *********************************************************
@@ -41,6 +50,7 @@ class UserList:
         if self.count == 0:
             self.current_users.append(User(msg))
             self.count += 1
+            current_user = self.current_users[0]
         else:
             count = 0
             found = False
@@ -49,9 +59,15 @@ class UserList:
                     found = True
                 else:
                     count += 1
-            if not found:
+            if found:
+                current_user = self.current_users[count]
+            else:
                 self.current_users.append(User(msg))
+                current_user = self.current_users[self.count]
                 self.count += 1
+
+        return current_user
+                
             
 
     def Print(self):
@@ -73,15 +89,11 @@ class UserList:
     def TellAllUsers(self, bot, string):
         count = 0
         user_string = ""
-        print("Got string:\n" + string)
 
         if self.count == 0:
             print("TellAllUsers called with no one connected.")
         else:
-            print("User count is " + str(self.count))
             while count < self.count:
-                print("Made it.")
-                print("Sending to: " + self.current_users[count].first_name)
                 chat_id = self.current_users[count].chat_id
                 bot.sendMessage(chat_id, string)
                 count += 1

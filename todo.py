@@ -1,4 +1,5 @@
 
+import os.path
 
 from util import *
 
@@ -19,7 +20,15 @@ class TodoList:
 
     def __init__(self, file):
 
-        self.file = file
+        if os.path.isfile(file):
+            # File already exists and is accessible
+            self.file = file
+        else:
+            # Create empty new file
+            self.file = file
+            temp_file = open(self.file, "w")
+            temp_file.close()
+
         self.num_lines = 0
         self.num_tasks = 0
         self.num_comments = 0
@@ -47,13 +56,10 @@ class TodoList:
             count = 0
             found_task = False
             found_comment = False
-            print(self.tasks)
+
             while count < self.num_tasks and not found_task:
-                print("Checking " + self.tasks[count])
                 if self.tasks[count] == item:
-                    print("Found " + item)
                     self.tasks.remove(item)
-                    print(self.tasks)
                     self.num_tasks -= 1
                     found_task = True
                 count += 1
@@ -69,13 +75,23 @@ class TodoList:
             if found_task or found_comment:
                 self.FileList()
                 return("Item removed.\n")
+            elif item.isdigit():
+                num = int(item)
+                
+                if num <= self.num_tasks:
+                   task = self.tasks[num-1]
+                   self.tasks.remove(task)
+                   self.num_tasks -= 1
+                   self.FileList()
+                   return("Item " + item + " removed.\n")
             else:
-                return("Item not found.\n")
+                   return("Item not found.\n")
         else:
             return("Todo list is empty.\n")
 
 
     def AddTask(self, task):
+
         self.tasks.append(task.rstrip("\n"))
         self.num_tasks += 1
 
@@ -185,8 +201,9 @@ class TodoList:
            "   ? or help- gives command options\n" + \
            "   print - prints list\n" + \
            "   say or comment blah- adds a comment\n" + \
-           "   add or a blah- adds a task\n" + \
-           "   del or d blah- deletes a task or comment\n" 
+           "   a or add blah- adds a task\n" + \
+           "   d or del blah- deletes a task or comment\n" + \
+           "   d or del #- deletes specific task #\n" 
         return(output_string)
 
     def TodoHandler(self, bot, msg):

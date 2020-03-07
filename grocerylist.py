@@ -3,9 +3,6 @@ from util import *
 
 #debug=0
 
-ITEM_ADDED=1
-ITEM_DUPLICATE=2
-
 
 class GroceryList:
 
@@ -106,16 +103,20 @@ class GroceryItemLocationList:
 
     def AddItem(self,location_in,item_in):
 
-        found = 0
+        exact_match = 0
+        location_found = 0
         location = location_in.capitalize()
         item = item_in.capitalize()
         
         for row in range(self.line_count):
+            if  self.currentlist[row][0] == location:
+                location_found = 1
             if  self.currentlist[row][0] == location and self.currentlist[row][1] == item:
-                found = 1
+                exact_match = 1
 
-        if found:
-            return(ITEM_DUPLICATE)
+        if exact_match:
+            output_string = "Item already on the list."
+            return(output_string)
         else:
             with open(self.file,"a") as infile:
                 infile.write(location + " " + item + "\n")
@@ -123,7 +124,11 @@ class GroceryItemLocationList:
             self.line_count = 0
             self.location_count = 0
             self.CreateList()
-            return(ITEM_ADDED)
+            output_string = "Adding " + item + " to " + location + "\n"
+            if location_found == 0:
+                output_string += "Location " + location + " is new and also added" + "\n"
+
+            return(output_string)
 
     def IsItemInLocation(self, location, item):
         
