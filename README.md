@@ -6,7 +6,7 @@ Currently, it provides the following functions:
 2- Maintains a todo list
 3- Maintains locations of grocery items in a store. (Such as cinnamon is on the baking aisle.)
 4- Allows for multiple houses, and users default to their location. (Ie. Dads House, Elis Apartment, etc)
-4- Miscellaneous commands:
+5- Miscellaneous commands:
   a- Displays command help
   b- RPi CPU temperature
   c- current users
