@@ -1,7 +1,6 @@
 
 import sys
 import time
-import telepot
 
 from gpiozero import CPUTemperature
 
@@ -12,15 +11,18 @@ from todo import *
 
 #debug=0
 
-GROCERY_LIST_FILE="grocerylist.txt"
-ITEM_LOCATION_FILE="itemlocationlist.txt"
 
-grocerylist = GroceryList(GROCERY_LIST_FILE)
+ITEM_LOCATION_FILE="itemlocationlist.txt"
+HOUSE_FILE="houses.txt"
+USER_PREFERENCES_FILE="users.txt"
+
+#grocerylist = GroceryList(GROCERY_LIST_FILE)
 grocerylocationlist = GroceryItemLocationList(ITEM_LOCATION_FILE)
 user_list = UserList()
 
-grocery_list_updated=False
-grocery_list_version=1
+house_list = HouseList(HOUSE_FILE)
+
+sleep_time = 10
 
 def CPUTooHot():
     
@@ -38,12 +40,16 @@ def handle(msg):
     last_name = msg['from']['last_name']
     person_id = msg['from']['id']
 
-    person = CheckBro(first_name, last_name)  # see users.py
+    person = CheckBro(first_name, last_name, USER_PREFERENCES_FILE)  # see users.py
 
     if person == HOMIE:
 
-        current_user = user_list.Add(msg)        # add if a new user joined 
+        sleep_time = 2 # decrease in case multiple commands are coming in
+        current_user = user_list.Add(msg,USER_PREFERENCES_FILE)        # add if a new user joined 
         todo_list = current_user.todo_list
+        housenum = int(current_user.house_address) - 1
+        grocerylist = house_list.current_houses[housenum].grocerylist
+        housename = house_list.current_houses[housenum].name
 
         if debug: print(msg)
         part = message.partition(" ")
@@ -77,34 +83,42 @@ def handle(msg):
         elif command == 'todo':
            output_string = todo_list.TodoHandler(bot, msg)
            bot.sendMessage(chat_id, output_string)
+        elif command == 'house':
+           output_string = house_list.MsgHandler(bot, msg, current_user)
+           bot.sendMessage(chat_id, output_string)
         
 
 # ****** Grocery commands begin here
 
         elif command == 'say' or command == "comment":
            grocerylist.AddComment(item)
-           user_list.TellAllUsers(bot, "Comment added.")
+           user_list.TellAllRoommates(bot, "+ Comment at " + housename, current_user.house_address) 
         elif command =='store':
            subcommand = part[2].partition(" ")
-           if subcommand[0].lower() == "add":
+           if subcommand[0].lower() == "add" or subcommand[0].lower() == "a":
                temp_tuple = subcommand[2].partition(" ")
                location = temp_tuple[0]
                item = temp_tuple[2]
                bot.sendMessage(chat_id, grocerylocationlist.AddItem(location, item))
+           elif subcommand[0].lower() == "areas":
+               bot.sendMessage(chat_id,grocerylocationlist.PrintLocationList())
            else:
-               bot.sendMessage(chat_id,"Store has the following: \n")
-               bot.sendMessage(chat_id,grocerylocationlist.PrintStoreList())
+               bot.sendMessage(chat_id,grocerylocationlist.PrintStoreLocationList(subcommand[0].lower()))
         elif command == 'list':
-           bot.sendMessage(chat_id,grocerylist.PrintList(grocerylocationlist))
+           output_string = housename + "\n" 
+           output_string += grocerylist.PrintList(grocerylocationlist)
+           bot.sendMessage(chat_id, output_string)
+        elif command == 'delete' or command == "del" or command == "d":
+           bot.sendMessage(chat_id, grocerylist.DeleteItem(item))
         elif command == 'areas' or command == 'locations':
            bot.sendMessage(chat_id,"The current areas in use are: \n")
            bot.sendMessage(chat_id,grocerylocationlist.PrintLocationList())
-        elif command == 'add':
+        elif command == 'add' or command == 'a':
            grocerylist.AddItem(item)
-           user_list.TellAllUsers(bot, "Adding " + item)
-        elif command == 'reset':
+           user_list.TellAllRoommates(bot, "+ " + item + " at "  + housename, current_user.house_address)
+        elif command == 'reset' or command == 'clear' or command == 'c':
            grocerylist.ClearList()
-           user_list.TellAllUsers(bot, "List cleared.")
+           user_list.TellAllRoommates(bot, housename + " list cleared.", current_user.house_address)
 
 # ******
 
@@ -124,10 +138,12 @@ Grocery List Commands:\n\n\
        Store - gives shopping options\n\
        Store add location item - adds the location info for an item\n\
        Areas or Locations - tells currently used store areas\n\
-       Reset - deletes the whole list\n\n\
+       Reset - clears the grocery list\n\n\
 Other commands:\n\n"
-   output_string += '       Todo- manages a family todo list\n'\
+   output_string += '       Todo- manages a personal todo list\n'\
        + "              Use Todo ? for a list of options\n"\
+       + "       House- manages which house you are using\n"\
+       + "       Use House ? for a list of options\n"\
        + "       Hi or Hello \n"\
        + "       Who - lists all current users\n"\
        + "       Temp or Hot - give current CPU temp\n\n"
@@ -141,14 +157,19 @@ Other commands:\n\n"
 
 
 # Get your Bot key from BotFather and put it here.
-bot=telepot.Bot('YOUR_BOT_KEY_HERE')
+bot=telepot.Bot('YOURKEYHERE')
 bot.message_loop(handle)
 print('I am ' + '\033[1m' + 'listening...' + '\033[0m')
+
+#junk = bot.getMe()
+#print(junk)
+
 
 while 1:
     try:
        
-        time.sleep(10)
+        time.sleep(sleep_time)
+        sleep_time = 10
     
     except KeyboardInterrupt:
         print('\n Program interrupted')

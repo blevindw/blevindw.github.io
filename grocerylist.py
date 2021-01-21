@@ -1,7 +1,7 @@
 
 from util import *
 
-#debug=0
+#debug=1
 
 
 class GroceryList:
@@ -20,6 +20,45 @@ class GroceryList:
 
         with open(self.file,"a") as infile:
             infile.write(item + "\n")
+
+    def DeleteItem(self, item):
+
+        with open(self.file,"r") as infile:
+            test = infile.read()
+    
+        if test == "":
+
+           return("Grocery list is currently empty\n")
+
+        else:
+
+            with open(self.file,"r") as infile:
+                line = infile.readline()
+                temp_list = []
+                count = 0           
+                while line != '':   # blank is end of file
+                    temp_item = line.rstrip("\n")
+
+                    # Skip over item if it matches
+                    found = 0
+                    if temp_item != item:
+                        temp_list.append(line.rstrip("\n"))
+                    else:
+                        found = 1
+
+                    count += 1
+                    line = infile.readline()
+
+            item_count = count
+
+            if found:
+                self.ClearList()
+                self.WriteList(temp_list,item_count)
+                output_string = item + " deleted."
+                return(output_string)
+            else:
+                return("Item not found.")
+
 
     def PrintList(self, locationlist):
 
@@ -88,6 +127,12 @@ class GroceryList:
         recreate_file = open(self.file, "w")
         recreate_file.close()
 
+    def WriteList(self, list, item_count):
+
+        with open(self.file,"a") as infile:
+            for i in range(item_count - 1):
+                infile.write(list[i] + "\n")
+
 
 class GroceryItemLocationList:
 
@@ -98,7 +143,6 @@ class GroceryItemLocationList:
         self.location_count = 0
         self.line_count = 0
 
-        if debug: print('About to create location list with {self.line_count} lines.')
         self.CreateList()
 
     def AddItem(self,location_in,item_in):
@@ -118,15 +162,16 @@ class GroceryItemLocationList:
             output_string = "Item already on the list."
             return(output_string)
         else:
-            with open(self.file,"a") as infile:
-                infile.write(location + " " + item + "\n")
-            # Recreate lists
-            self.line_count = 0
-            self.location_count = 0
-            self.CreateList()
+            self.line_count += 1
+            self.currentlist.append([location,item])
+            self.currentlist.sort(key=lambda x:x[1])
+            self.currentlist.sort(key=lambda x:x[0])
+            self.SaveList()
+
             output_string = "Adding " + item + " to " + location + "\n"
             if location_found == 0:
                 output_string += "Location " + location + " is new and also added" + "\n"
+                self.location_count += 1
 
             return(output_string)
 
@@ -172,7 +217,7 @@ class GroceryItemLocationList:
                 count += 1
                 line = infile.readline()
         
-        self.currentlist.sort(key=lambda x:x[0])
+        self.currentlist.sort(key=lambda x:x[1])
         self.currentlist.sort(key=lambda x:x[0])
 
         if debug: self.PrintItemList()
@@ -207,11 +252,39 @@ class GroceryItemLocationList:
             string += self.currentlist[row][0] + " " + self.currentlist[row][1] + "\n"
         return(string)
 
-
     def PrintLocationList(self):
         string = '\n'.join([str(loc) for loc in self.locations])
         return(string)
 
+    def PrintStoreLocationList(self, location_in):
+
+        if location_in:
+            location = location_in.capitalize()
+        else:
+            location = "store"
+        
+        if location in self.locations:
+            string = location + " has the following items available:\n"
+            for row in range(self.line_count):
+                if self.currentlist[row][0] == location:
+                    string += self.currentlist[row][1] + "\n"
+        elif location == "store":
+            string = self.PrintStoreList()
+        else:
+            string = "Location not found. Use command Store Areas to see current locations.\n"
+
+        return(string)
+
+    def SaveList(self):
+
+        recreate_file = open(self.file, "w")
+        recreate_file.close()
+        
+        with open(self.file,"a") as infile:
+            count = 0
+            while count < self.line_count:
+                infile.write(self.currentlist[count][0] + " " + self.currentlist[count][1] + "\n")
+                count += 1
 
         
 # These are used for debugging.
